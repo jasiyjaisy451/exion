@@ -29,7 +29,7 @@ export default function SchoolWebsite() {
     if (typeof window !== "undefined") {
       return !sessionStorage.getItem("hasVisited")
     }
-    return true
+    return false // Fix hydration by defaulting to false on server
   })
 
   const [globalDokumentasi, setGlobalDokumentasi] = useState<Documentation[]>([])
@@ -63,6 +63,13 @@ export default function SchoolWebsite() {
       sessionStorage.setItem("hasVisited", "true")
     }
   }
+
+  // Fix hydration by checking loading screen state on client
+  React.useEffect(() => {
+    if (typeof window !== "undefined" && !sessionStorage.getItem("hasVisited")) {
+      setShowLoadingScreen(true)
+    }
+  }, [])
 
   const handleAdminLogin = (role: string) => {
     setActiveSection("admin-dashboard")

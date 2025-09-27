@@ -284,7 +284,13 @@ export default function SuperAdminDashboard({ onLogout }: SuperAdminDashboardPro
       {/* Enhanced Ekstrakurikuler Overview */}
       <Card className="admin-card">
         <CardHeader className="border-b border-border">
-          <CardTitle className="text-foreground">Overview Ekstrakurikuler</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-foreground">Overview Ekstrakurikuler</CardTitle>
+            <Button variant="outline" size="sm" onClick={() => setActiveTab("overview")}>
+              <Eye className="w-4 h-4 mr-2" />
+              Lihat Detail
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -315,7 +321,15 @@ export default function SuperAdminDashboard({ onLogout }: SuperAdminDashboardPro
                     </span>
                   </div>
                   <div className="pt-2 border-t">
-                    <Button variant="outline" size="sm" className="w-full text-xs bg-transparent">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full text-xs bg-transparent"
+                      onClick={() => {
+                        // Navigate to specific ekskul admin view
+                        console.log(`Viewing ${ekskul.value} details`)
+                      }}
+                    >
                       <Eye className="w-3 h-3 mr-1" />
                       Lihat Detail
                     </Button>

@@ -1,10 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { LayoutDashboard, FileText, Users, Settings, Trophy, ChartBar as BarChart3, Music, Mic, Volume2, Calendar, Menu } from "lucide-react"
+import { LayoutDashboard, FileText, Users, Settings, Trophy, ChartBar as BarChart3, Music, Mic, Volume2, Calendar, Menu, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { useAuth } from "@/hooks/use-auth"
 import { getMembers, getDocumentation, getAchievements } from "@/lib/firebase-service"
 import type { Member, Documentation, Achievement } from "@/types"
@@ -93,175 +95,248 @@ export default function BandAdminDashboard({ onLogout }: BandAdminDashboardProps
           icon={Users}
           variant="default"
         />
-        <DashboardCard title="Pertunjukan" value={8} description="Show tahun ini" icon={Mic} variant="default" />
+        <DashboardCard 
+          title="Dokumentasi" 
+          value={documentation.length} 
+          description="Kegiatan terdokumentasi" 
+          icon={FileText} 
+          variant="default" 
+        />
         <DashboardCard
           title="Prestasi"
           value={achievements.length}
-          description="Penghargaan musik"
+          description="Total prestasi"
           icon={Trophy}
           variant="warning"
         />
         <DashboardCard
-          title="Repertoar"
-          value={25}
-          description="Lagu dikuasai"
+          title="Kegiatan Bulan Ini"
+          value={documentation.filter(doc => {
+            const docDate = new Date(doc.date)
+            const now = new Date()
+            return docDate.getMonth() === now.getMonth() && docDate.getFullYear() === now.getFullYear()
+          }).length}
+          description="Aktivitas terbaru"
           icon={Volume2}
           variant="primary"
-          trend={{ value: 5, label: "lagu baru bulan ini", isPositive: true }}
         />
       </div>
 
-      {/* Band Formation */}
+      {/* Recent Activities */}
       <Card className="admin-card">
         <CardHeader className="border-b border-border">
           <CardTitle className="flex items-center gap-2 text-foreground">
             <Music className="w-5 h-5 text-purple-600" />
-            Formasi Band Utama
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-            {[
-              { instrument: "Vokal Utama", player: "Sari Dewi", role: "Lead Singer", status: "Active" },
-              { instrument: "Gitar Lead", player: "Andi Pratama", role: "Lead Guitar", status: "Active" },
-              { instrument: "Gitar Bass", player: "Budi Santoso", role: "Bass Guitar", status: "Active" },
-              { instrument: "Keyboard", player: "Citra Lestari", role: "Keyboardist", status: "Active" },
-              { instrument: "Drum", player: "Doni Saputra", role: "Drummer", status: "Active" },
-              { instrument: "Vokal Pendukung", player: "Eka Putri", role: "Backing Vocal", status: "Active" },
-            ].map((musician, index) => (
-              <div key={index} className="p-4 border rounded-lg text-center hover:shadow-md transition-all">
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <Music className="w-6 h-6 text-purple-600" />
-                </div>
-                <h4 className="font-semibold text-foreground">{musician.player}</h4>
-                <p className="text-sm text-muted-foreground">{musician.instrument}</p>
-                <Badge variant="default" className="mt-2 bg-purple-600">
-                  {musician.status}
-                </Badge>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Recent Performances */}
-      <Card className="admin-card">
-        <CardHeader className="border-b border-border">
-          <CardTitle className="flex items-center gap-2 text-foreground">
-            <Mic className="w-5 h-5 text-purple-600" />
-            Pertunjukan Terbaru
+            Aktivitas Terbaru
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
           <div className="space-y-4">
-            {[
-              {
-                event: "Festival Seni Sekolah",
-                date: "2024-02-14",
-                venue: "Aula Sekolah",
-                audience: "500+",
-                type: "School Event",
-              },
-              {
-                event: "Konser Amal",
-                date: "2024-02-07",
-                venue: "Gedung Serbaguna",
-                audience: "300+",
-                type: "Charity",
-              },
-              {
-                event: "Perayaan HUT Sekolah",
-                date: "2024-01-28",
-                venue: "Lapangan Sekolah",
-                audience: "800+",
-                type: "Anniversary",
-              },
-              {
-                event: "Kompetisi Band Pelajar",
-                date: "2024-01-15",
-                venue: "Balai Kota",
-                audience: "200+",
-                type: "Competition",
-              },
-            ].map((performance, index) => (
+            {documentation.slice(0, 5).map((doc) => (
               <div
-                key={index}
-                className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/30 transition-colors"
+                key={doc.id}
+                className="flex items-center space-x-4 p-3 rounded-lg hover:bg-muted/50 transition-colors"
               >
-                <div>
-                  <h4 className="font-semibold text-foreground">{performance.event}</h4>
-                  <p className="text-sm text-muted-foreground">{performance.venue}</p>
-                  <Badge variant="outline" className="mt-1">
-                    {performance.type}
-                  </Badge>
+                <div className="w-3 h-3 bg-purple-600 rounded-full flex-shrink-0"></div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-foreground truncate">{doc.title}</p>
+                  <p className="text-sm text-muted-foreground line-clamp-1">{doc.description}</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-medium text-foreground">
-                    {new Date(performance.date).toLocaleDateString("id-ID")}
-                  </p>
-                  <p className="text-sm text-muted-foreground">{performance.audience} penonton</p>
+                <div className="text-sm text-muted-foreground flex-shrink-0">
+                  {new Date(doc.date).toLocaleDateString("id-ID")}
                 </div>
               </div>
             ))}
+            {documentation.length === 0 && (
+              <div className="text-center py-8">
+                <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground">Belum ada aktivitas terbaru</p>
+                <p className="text-sm text-muted-foreground">Mulai dengan menambahkan dokumentasi kegiatan</p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
+    </div>
+  )
 
-      {/* Upcoming Events */}
-      <Card className="admin-card">
-        <CardHeader className="border-b border-border">
-          <CardTitle className="flex items-center gap-2 text-foreground">
-            <Calendar className="w-5 h-5 text-purple-600" />
-            Jadwal Mendatang
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
-          <div className="space-y-4">
-            {[
-              {
-                event: "Konser Musik Klasik",
-                date: "2024-03-20",
-                time: "19:00",
-                venue: "Gedung Kesenian",
-                type: "Concert",
-              },
-              {
-                event: "Festival Musik Daerah",
-                date: "2024-04-05",
-                time: "15:00",
-                venue: "Taman Budaya",
-                type: "Festival",
-              },
-              {
-                event: "Pentas Seni Gabungan",
-                date: "2024-04-18",
-                time: "18:30",
-                venue: "Aula Besar",
-                type: "Collaboration",
-              },
-            ].map((event, index) => (
-              <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                <div>
-                  <h4 className="font-semibold text-foreground">{event.event}</h4>
-                  <p className="text-sm text-muted-foreground">{event.venue}</p>
-                  <Badge variant="outline" className="mt-1">
-                    {event.type}
-                  </Badge>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-medium text-foreground">
-                    {new Date(event.date).toLocaleDateString("id-ID")}
-                  </p>
-                  <p className="text-sm text-muted-foreground">{event.time}</p>
-                  <Badge variant="secondary" className="mt-1">
-                    Upcoming
-                  </Badge>
-                </div>
-              </div>
-            ))}
-          </div>
+  const renderPerformances = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-heading font-bold mb-2">Pertunjukan Band</h1>
+          <p className="text-muted-foreground">Kelola jadwal dan pertunjukan musik</p>
+        </div>
+        <Button className="hover-lift">
+          <Plus className="w-4 h-4 mr-2" />
+          Tambah Pertunjukan
+        </Button>
+      </div>
+      
+      <Card>
+        <CardContent className="p-12 text-center">
+          <Mic className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-muted-foreground mb-2">Fitur Dalam Pengembangan</h3>
+          <p className="text-muted-foreground">Manajemen pertunjukan akan segera tersedia</p>
         </CardContent>
       </Card>
+    </div>
+  )
+
+  const renderRehearsals = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-heading font-bold mb-2">Latihan Band</h1>
+          <p className="text-muted-foreground">Kelola jadwal dan materi latihan</p>
+        </div>
+        <Button className="hover-lift">
+          <Plus className="w-4 h-4 mr-2" />
+          Tambah Latihan
+        </Button>
+      </div>
+      
+      <Card>
+        <CardContent className="p-12 text-center">
+          <Music className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-muted-foreground mb-2">Fitur Dalam Pengembangan</h3>
+          <p className="text-muted-foreground">Manajemen latihan akan segera tersedia</p>
+        </CardContent>
+      </Card>
+    </div>
+  )
+
+  const renderRepertoire = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-heading font-bold mb-2">Repertoar Band</h1>
+          <p className="text-muted-foreground">Kelola daftar lagu dan musik</p>
+        </div>
+        <Button className="hover-lift">
+          <Plus className="w-4 h-4 mr-2" />
+          Tambah Lagu
+        </Button>
+      </div>
+      
+      <Card>
+        <CardContent className="p-12 text-center">
+          <Volume2 className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-muted-foreground mb-2">Fitur Dalam Pengembangan</h3>
+          <p className="text-muted-foreground">Manajemen repertoar akan segera tersedia</p>
+        </CardContent>
+      </Card>
+    </div>
+  )
+
+  const renderReports = () => (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-heading font-bold mb-2">Laporan Band</h1>
+        <p className="text-muted-foreground">Analisis data dan laporan ekstrakurikuler band</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Laporan Anggota</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span>Total Musisi</span>
+                <span className="font-bold">{members.length}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Musisi Aktif</span>
+                <span className="font-bold text-green-600">{members.filter(m => m.status === 'active').length}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Dokumentasi</span>
+                <span className="font-bold">{documentation.length}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Laporan Prestasi</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span>Total Prestasi</span>
+                <span className="font-bold">{achievements.length}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Prestasi Nasional</span>
+                <span className="font-bold text-yellow-600">{achievements.filter(a => a.level === 'Nasional').length}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Prestasi Tahun Ini</span>
+                <span className="font-bold">{achievements.filter(a => new Date(a.date).getFullYear() === new Date().getFullYear()).length}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+
+  const renderSettings = () => (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-heading font-bold mb-2">Pengaturan Band</h1>
+        <p className="text-muted-foreground">Kelola pengaturan ekstrakurikuler band</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Informasi Ekstrakurikuler</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label>Nama Ekstrakurikuler</Label>
+              <Input value="Band" disabled />
+            </div>
+            <div>
+              <Label>Pembina</Label>
+              <Input value={user?.name || "Admin Band"} disabled />
+            </div>
+            <div>
+              <Label>Lokasi</Label>
+              <Input placeholder="Studio Musik" />
+            </div>
+            <div>
+              <Label>Jadwal</Label>
+              <Input placeholder="Rabu & Jumat, 15:00-17:00" />
+            </div>
+            <Button>Simpan Pengaturan</Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Statistik</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span>Total Musisi</span>
+              <span className="font-bold">{members.length}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Total Dokumentasi</span>
+              <span className="font-bold">{documentation.length}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Total Prestasi</span>
+              <span className="font-bold">{achievements.length}</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 
@@ -269,6 +344,12 @@ export default function BandAdminDashboard({ onLogout }: BandAdminDashboardProps
     switch (activeTab) {
       case "dashboard":
         return renderDashboard()
+      case "performances":
+        return renderPerformances()
+      case "rehearsals":
+        return renderRehearsals()
+      case "repertoire":
+        return renderRepertoire()
       case "members":
         return <AdminMemberCRUD ekskulType="band" />
       case "documentation":
@@ -277,6 +358,10 @@ export default function BandAdminDashboard({ onLogout }: BandAdminDashboardProps
         return <AdminAttendanceManagement />
       case "achievements":
         return <AdminAchievementManagement />
+      case "reports":
+        return renderReports()
+      case "settings":
+        return renderSettings()
       default:
         return renderDashboard()
     }

@@ -1,10 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { LayoutDashboard, FileText, Users, Settings, Trophy, ChartBar as BarChart3, Sword, Target, Award, Menu } from "lucide-react"
+import { LayoutDashboard, FileText, Users, Settings, Trophy, ChartBar as BarChart3, Sword, Target, Award, Menu, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { useAuth } from "@/hooks/use-auth"
 import { getMembers, getDocumentation, getAchievements } from "@/lib/firebase-service"
 import type { Member, Documentation, Achievement } from "@/types"
@@ -95,99 +97,248 @@ export default function SilatAdminDashboard({ onLogout }: SilatAdminDashboardPro
           icon={Users}
           variant="danger"
         />
-        <DashboardCard title="Sabuk Hitam" value={5} description="Master level" icon={Award} variant="danger" />
         <DashboardCard
-          title="Turnamen"
+          title="Dokumentasi"
+          value={documentation.length}
+          description="Kegiatan terdokumentasi"
+          icon={Award}
+          variant="danger"
+        />
+        <DashboardCard
+          title="Prestasi"
           value={achievements.length}
-          description="Prestasi tahun ini"
+          description="Total prestasi"
           icon={Trophy}
           variant="danger"
         />
         <DashboardCard
-          title="Tingkat Skill"
-          value="78%"
-          description="Rata-rata kemampuan"
+          title="Kegiatan Bulan Ini"
+          value={documentation.filter(doc => {
+            const docDate = new Date(doc.date)
+            const now = new Date()
+            return docDate.getMonth() === now.getMonth() && docDate.getFullYear() === now.getFullYear()
+          }).length}
+          description="Aktivitas terbaru"
           icon={Target}
           variant="danger"
-          trend={{ value: 8, label: "dari bulan lalu", isPositive: true }}
         />
       </div>
 
-      {/* Belt Progression */}
+      {/* Recent Activities */}
       <Card className="hover:shadow-md transition-all duration-300">
         <CardHeader className="border-b border-border">
           <CardTitle className="flex items-center gap-2 text-foreground">
             <Award className="w-5 h-5 text-red-600 dark:text-red-400" />
-            Distribusi Tingkatan Sabuk
+            Aktivitas Terbaru
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
           <div className="space-y-4">
-            {[
-              { belt: "Sabuk Putih", count: 15, color: "bg-gray-200 dark:bg-gray-600", percentage: 45 },
-              { belt: "Sabuk Kuning", count: 8, color: "bg-yellow-400", percentage: 24 },
-              { belt: "Sabuk Hijau", count: 6, color: "bg-green-500", percentage: 18 },
-              { belt: "Sabuk Biru", count: 3, color: "bg-blue-500", percentage: 9 },
-              { belt: "Sabuk Coklat", count: 1, color: "bg-amber-700", percentage: 3 },
-              { belt: "Sabuk Hitam", count: 0, color: "bg-black dark:bg-gray-800", percentage: 0 },
-            ].map((belt, index) => (
+            {documentation.slice(0, 5).map((doc) => (
               <div
-                key={index}
-                className="flex items-center justify-between hover:bg-muted/30 p-2 rounded transition-colors"
+                key={doc.id}
+                className="flex items-center space-x-4 p-3 rounded-lg hover:bg-muted/50 transition-colors"
               >
-                <div className="flex items-center gap-3">
-                  <div className={`w-4 h-4 rounded-full ${belt.color} border border-border`}></div>
-                  <span className="font-medium text-foreground">{belt.belt}</span>
+                <div className="w-3 h-3 bg-red-600 rounded-full flex-shrink-0"></div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-foreground truncate">{doc.title}</p>
+                  <p className="text-sm text-muted-foreground line-clamp-1">{doc.description}</p>
                 </div>
-                <div className="flex items-center gap-4">
-                  <div className="w-32 bg-muted rounded-full h-2">
-                    <div
-                      className="bg-red-600 dark:bg-red-500 h-2 rounded-full transition-all duration-500"
-                      style={{ width: `${belt.percentage}%` }}
-                    ></div>
-                  </div>
-                  <span className="text-sm font-medium w-8 text-foreground">{belt.count}</span>
+                <div className="text-sm text-muted-foreground flex-shrink-0">
+                  {new Date(doc.date).toLocaleDateString("id-ID")}
                 </div>
               </div>
             ))}
+            {documentation.length === 0 && (
+              <div className="text-center py-8">
+                <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground">Belum ada aktivitas terbaru</p>
+                <p className="text-sm text-muted-foreground">Mulai dengan menambahkan dokumentasi kegiatan</p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
+    </div>
+  )
 
-      {/* Upcoming Tournaments */}
+  const renderTraining = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-heading font-bold mb-2">Latihan Pencak Silat</h1>
+          <p className="text-muted-foreground">Kelola jadwal dan materi latihan</p>
+        </div>
+        <Button className="hover-lift">
+          <Plus className="w-4 h-4 mr-2" />
+          Tambah Latihan
+        </Button>
+      </div>
+      
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-red-600 dark:text-red-400" />
-            Turnamen Mendatang
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {[
-              { name: "Kejuaraan Pencak Silat Pelajar", date: "2024-03-20", category: "Tanding", status: "Registered" },
-              { name: "Festival Seni Bela Diri", date: "2024-04-15", category: "Seni", status: "Preparing" },
-              {
-                name: "Kompetisi Pencak Silat Nasional",
-                date: "2024-05-25",
-                category: "Tanding & Seni",
-                status: "Planning",
-              },
-            ].map((tournament, index) => (
-              <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                <div>
-                  <h4 className="font-semibold">{tournament.name}</h4>
-                  <p className="text-sm text-muted-foreground">{tournament.category}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-medium">{new Date(tournament.date).toLocaleDateString("id-ID")}</p>
-                  <Badge variant="outline">{tournament.status}</Badge>
-                </div>
-              </div>
-            ))}
-          </div>
+        <CardContent className="p-12 text-center">
+          <Sword className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-muted-foreground mb-2">Fitur Dalam Pengembangan</h3>
+          <p className="text-muted-foreground">Manajemen latihan akan segera tersedia</p>
         </CardContent>
       </Card>
+    </div>
+  )
+
+  const renderTournaments = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-heading font-bold mb-2">Turnamen Pencak Silat</h1>
+          <p className="text-muted-foreground">Kelola turnamen dan kompetisi</p>
+        </div>
+        <Button className="hover-lift">
+          <Plus className="w-4 h-4 mr-2" />
+          Tambah Turnamen
+        </Button>
+      </div>
+      
+      <Card>
+        <CardContent className="p-12 text-center">
+          <Trophy className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-muted-foreground mb-2">Fitur Dalam Pengembangan</h3>
+          <p className="text-muted-foreground">Manajemen turnamen akan segera tersedia</p>
+        </CardContent>
+      </Card>
+    </div>
+  )
+
+  const renderBelts = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-heading font-bold mb-2">Tingkatan Sabuk</h1>
+          <p className="text-muted-foreground">Kelola tingkatan dan ujian sabuk</p>
+        </div>
+        <Button className="hover-lift">
+          <Plus className="w-4 h-4 mr-2" />
+          Tambah Ujian
+        </Button>
+      </div>
+      
+      <Card>
+        <CardContent className="p-12 text-center">
+          <Award className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-muted-foreground mb-2">Fitur Dalam Pengembangan</h3>
+          <p className="text-muted-foreground">Manajemen tingkatan sabuk akan segera tersedia</p>
+        </CardContent>
+      </Card>
+    </div>
+  )
+
+  const renderReports = () => (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-heading font-bold mb-2">Laporan Pencak Silat</h1>
+        <p className="text-muted-foreground">Analisis data dan laporan ekstrakurikuler pencak silat</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Laporan Anggota</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span>Total Pesilat</span>
+                <span className="font-bold">{members.length}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Pesilat Aktif</span>
+                <span className="font-bold text-green-600">{members.filter(m => m.status === 'active').length}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Dokumentasi</span>
+                <span className="font-bold">{documentation.length}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Laporan Prestasi</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span>Total Prestasi</span>
+                <span className="font-bold">{achievements.length}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Prestasi Nasional</span>
+                <span className="font-bold text-yellow-600">{achievements.filter(a => a.level === 'Nasional').length}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Prestasi Tahun Ini</span>
+                <span className="font-bold">{achievements.filter(a => new Date(a.date).getFullYear() === new Date().getFullYear()).length}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+
+  const renderSettings = () => (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-heading font-bold mb-2">Pengaturan Pencak Silat</h1>
+        <p className="text-muted-foreground">Kelola pengaturan ekstrakurikuler pencak silat</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Informasi Ekstrakurikuler</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label>Nama Ekstrakurikuler</Label>
+              <Input value="Pencak Silat" disabled />
+            </div>
+            <div>
+              <Label>Pelatih</Label>
+              <Input value={user?.name || "Admin Pencak Silat"} disabled />
+            </div>
+            <div>
+              <Label>Lokasi</Label>
+              <Input placeholder="Aula Sekolah" />
+            </div>
+            <div>
+              <Label>Jadwal</Label>
+              <Input placeholder="Selasa & Kamis, 16:00-18:00" />
+            </div>
+            <Button>Simpan Pengaturan</Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Statistik</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span>Total Pesilat</span>
+              <span className="font-bold">{members.length}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Total Dokumentasi</span>
+              <span className="font-bold">{documentation.length}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Total Prestasi</span>
+              <span className="font-bold">{achievements.length}</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 
@@ -195,6 +346,12 @@ export default function SilatAdminDashboard({ onLogout }: SilatAdminDashboardPro
     switch (activeTab) {
       case "dashboard":
         return renderDashboard()
+      case "training":
+        return renderTraining()
+      case "tournaments":
+        return renderTournaments()
+      case "belts":
+        return renderBelts()
       case "members":
         return <AdminMemberCRUD ekskulType="silat" />
       case "documentation":
@@ -203,14 +360,10 @@ export default function SilatAdminDashboard({ onLogout }: SilatAdminDashboardPro
         return <AdminAttendanceManagement />
       case "achievements":
         return <AdminAchievementManagement />
-      case "members":
-        return <AdminMemberCRUD ekskulType="silat" />
-      case "documentation":
-        return <AdminDocumentationCRUD ekskulType="silat" />
-      case "attendance":
-        return <AdminAttendanceManagement />
-      case "achievements":
-        return <AdminAchievementManagement />
+      case "reports":
+        return renderReports()
+      case "settings":
+        return renderSettings()
       default:
         return renderDashboard()
     }

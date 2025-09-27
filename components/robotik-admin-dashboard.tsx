@@ -1,10 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { LayoutDashboard, FileText, Users, Settings, Trophy, ChartBar as BarChart3, Cpu, Wrench, Target, Menu, UserCheck } from "lucide-react"
+import { LayoutDashboard, FileText, Users, Settings, Trophy, ChartBar as BarChart3, Cpu, Wrench, Target, Menu, UserCheck, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { useAuth } from "@/hooks/use-auth"
 import { getMembers, getDocumentation, getAchievements } from "@/lib/firebase-service"
 import type { Member, Documentation, Achievement } from "@/types"
@@ -95,103 +97,247 @@ export default function RobotikAdminDashboard({ onLogout }: RobotikAdminDashboar
           variant="warning"
         />
         <DashboardCard
-          title="Proyek Aktif"
-          value={8}
-          description="Robot dalam pengembangan"
+          title="Dokumentasi"
+          value={documentation.length}
+          description="Kegiatan terdokumentasi"
           icon={Cpu}
           variant="warning"
         />
         <DashboardCard
-          title="Kompetisi"
+          title="Prestasi"
           value={achievements.length}
-          description="Prestasi tahun ini"
+          description="Total prestasi"
           icon={Trophy}
           variant="warning"
         />
         <DashboardCard
-          title="Tingkat Skill"
-          value="85%"
-          description="Rata-rata kemampuan"
+          title="Kegiatan Bulan Ini"
+          value={documentation.filter(doc => {
+            const docDate = new Date(doc.date)
+            const now = new Date()
+            return docDate.getMonth() === now.getMonth() && docDate.getFullYear() === now.getFullYear()
+          }).length}
+          description="Aktivitas terbaru"
           icon={Target}
           variant="warning"
-          trend={{ value: 12, label: "dari bulan lalu", isPositive: true }}
         />
       </div>
 
-      {/* Current Projects */}
+      {/* Recent Activities */}
       <Card className="hover:shadow-md transition-all duration-300">
         <CardHeader className="border-b border-border">
           <CardTitle className="flex items-center gap-2 text-foreground">
             <Cpu className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-            Proyek Robot Terkini
+            Aktivitas Terbaru
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
           <div className="space-y-4">
-            {[
-              { name: "Robot Line Follower", progress: 85, status: "Testing", team: "Tim Alpha" },
-              { name: "Robot Sumo", progress: 60, status: "Development", team: "Tim Beta" },
-              { name: "Robot Soccer", progress: 40, status: "Design", team: "Tim Gamma" },
-              { name: "Drone Autonomous", progress: 25, status: "Planning", team: "Tim Delta" },
-            ].map((project, index) => (
+            {documentation.slice(0, 5).map((doc) => (
               <div
-                key={index}
-                className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/30 transition-colors"
+                key={doc.id}
+                className="flex items-center space-x-4 p-3 rounded-lg hover:bg-muted/50 transition-colors"
               >
-                <div className="flex-1">
-                  <h4 className="font-semibold text-foreground">{project.name}</h4>
-                  <p className="text-sm text-muted-foreground">{project.team}</p>
-                  <div className="w-full bg-muted rounded-full h-2 mt-2">
-                    <div
-                      className="bg-amber-600 dark:bg-amber-500 h-2 rounded-full transition-all duration-500"
-                      style={{ width: `${project.progress}%` }}
-                    ></div>
-                  </div>
+                <div className="w-3 h-3 bg-amber-600 rounded-full flex-shrink-0"></div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-foreground truncate">{doc.title}</p>
+                  <p className="text-sm text-muted-foreground line-clamp-1">{doc.description}</p>
                 </div>
-                <div className="ml-4 text-right">
-                  <Badge variant={project.status === "Testing" ? "default" : "secondary"}>{project.status}</Badge>
-                  <p className="text-sm text-muted-foreground mt-1">{project.progress}%</p>
+                <div className="text-sm text-muted-foreground flex-shrink-0">
+                  {new Date(doc.date).toLocaleDateString("id-ID")}
                 </div>
               </div>
             ))}
+            {documentation.length === 0 && (
+              <div className="text-center py-8">
+                <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground">Belum ada aktivitas terbaru</p>
+                <p className="text-sm text-muted-foreground">Mulai dengan menambahkan dokumentasi kegiatan</p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
+    </div>
+  )
 
-      {/* Upcoming Competitions */}
-      <Card className="hover:shadow-md transition-all duration-300">
-        <CardHeader className="border-b border-border">
-          <CardTitle className="flex items-center gap-2 text-foreground">
-            <Trophy className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-            Kompetisi Mendatang
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
-          <div className="space-y-4">
-            {[
-              { name: "Kontes Robot Indonesia", date: "2024-03-15", category: "Line Follower", status: "Registered" },
-              { name: "Robotik Competition", date: "2024-04-20", category: "Sumo Robot", status: "Preparing" },
-              { name: "Tech Innovation Fair", date: "2024-05-10", category: "Innovation", status: "Planning" },
-            ].map((comp, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/30 transition-colors"
-              >
-                <div>
-                  <h4 className="font-semibold text-foreground">{comp.name}</h4>
-                  <p className="text-sm text-muted-foreground">{comp.category}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-medium text-foreground">
-                    {new Date(comp.date).toLocaleDateString("id-ID")}
-                  </p>
-                  <Badge variant="outline">{comp.status}</Badge>
-                </div>
-              </div>
-            ))}
-          </div>
+  const renderProjects = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-heading font-bold mb-2">Proyek Robotik</h1>
+          <p className="text-muted-foreground">Kelola proyek dan pengembangan robot</p>
+        </div>
+        <Button className="hover-lift">
+          <Plus className="w-4 h-4 mr-2" />
+          Tambah Proyek
+        </Button>
+      </div>
+      
+      <Card>
+        <CardContent className="p-12 text-center">
+          <Cpu className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-muted-foreground mb-2">Fitur Dalam Pengembangan</h3>
+          <p className="text-muted-foreground">Manajemen proyek robotik akan segera tersedia</p>
         </CardContent>
       </Card>
+    </div>
+  )
+
+  const renderCompetitions = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-heading font-bold mb-2">Kompetisi Robotik</h1>
+          <p className="text-muted-foreground">Kelola kompetisi dan turnamen robotik</p>
+        </div>
+        <Button className="hover-lift">
+          <Plus className="w-4 h-4 mr-2" />
+          Tambah Kompetisi
+        </Button>
+      </div>
+      
+      <Card>
+        <CardContent className="p-12 text-center">
+          <Trophy className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-muted-foreground mb-2">Fitur Dalam Pengembangan</h3>
+          <p className="text-muted-foreground">Manajemen kompetisi akan segera tersedia</p>
+        </CardContent>
+      </Card>
+    </div>
+  )
+
+  const renderTraining = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-heading font-bold mb-2">Pelatihan Robotik</h1>
+          <p className="text-muted-foreground">Kelola materi dan jadwal pelatihan</p>
+        </div>
+        <Button className="hover-lift">
+          <Plus className="w-4 h-4 mr-2" />
+          Tambah Materi
+        </Button>
+      </div>
+      
+      <Card>
+        <CardContent className="p-12 text-center">
+          <Wrench className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-muted-foreground mb-2">Fitur Dalam Pengembangan</h3>
+          <p className="text-muted-foreground">Manajemen pelatihan akan segera tersedia</p>
+        </CardContent>
+      </Card>
+    </div>
+  )
+
+  const renderReports = () => (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-heading font-bold mb-2">Laporan Robotik</h1>
+        <p className="text-muted-foreground">Analisis data dan laporan ekstrakurikuler robotik</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Laporan Anggota</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span>Total Anggota</span>
+                <span className="font-bold">{members.length}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Anggota Aktif</span>
+                <span className="font-bold text-green-600">{members.filter(m => m.status === 'active').length}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Dokumentasi</span>
+                <span className="font-bold">{documentation.length}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Laporan Prestasi</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span>Total Prestasi</span>
+                <span className="font-bold">{achievements.length}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Prestasi Nasional</span>
+                <span className="font-bold text-yellow-600">{achievements.filter(a => a.level === 'Nasional').length}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Prestasi Tahun Ini</span>
+                <span className="font-bold">{achievements.filter(a => new Date(a.date).getFullYear() === new Date().getFullYear()).length}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+
+  const renderSettings = () => (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-heading font-bold mb-2">Pengaturan Robotik</h1>
+        <p className="text-muted-foreground">Kelola pengaturan ekstrakurikuler robotik</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Informasi Ekstrakurikuler</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label>Nama Ekstrakurikuler</Label>
+              <Input value="Robotik" disabled />
+            </div>
+            <div>
+              <Label>Pembina</Label>
+              <Input value={user?.name || "Admin Robotik"} disabled />
+            </div>
+            <div>
+              <Label>Lokasi</Label>
+              <Input placeholder="Lab Komputer & Lab Robotik" />
+            </div>
+            <div>
+              <Label>Jadwal</Label>
+              <Input placeholder="Selasa & Kamis, 15:30-17:30" />
+            </div>
+            <Button>Simpan Pengaturan</Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Statistik</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span>Total Anggota</span>
+              <span className="font-bold">{members.length}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Total Dokumentasi</span>
+              <span className="font-bold">{documentation.length}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Total Prestasi</span>
+              <span className="font-bold">{achievements.length}</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 
@@ -199,6 +345,12 @@ export default function RobotikAdminDashboard({ onLogout }: RobotikAdminDashboar
     switch (activeTab) {
       case "dashboard":
         return renderDashboard()
+      case "projects":
+        return renderProjects()
+      case "competitions":
+        return renderCompetitions()
+      case "training":
+        return renderTraining()
       case "members":
         return <AdminMemberCRUD ekskulType="robotik" />
       case "documentation":
@@ -207,20 +359,10 @@ export default function RobotikAdminDashboard({ onLogout }: RobotikAdminDashboar
         return <AdminAttendanceManagement />
       case "achievements":
         return <AdminAchievementManagement />
-      case "members":
-        return <AdminMemberCRUD ekskulType="robotik" />
-      case "documentation":
-        return <AdminDocumentationCRUD ekskulType="robotik" />
-      case "attendance":
-        return <AdminAttendanceManagement />
-      case "achievements":
-        return <AdminAchievementManagement />
-      case "members":
-        return <AdminMemberCRUD ekskulType="robotik" />
-      case "documentation":
-        return <AdminDocumentationCRUD ekskulType="robotik" />
-      case "attendance":
-        return <AdminAttendanceManagement />
+      case "reports":
+        return renderReports()
+      case "settings":
+        return renderSettings()
       default:
         return renderDashboard()
     }

@@ -1,10 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { LayoutDashboard, FileText, Users, Settings, Trophy, ChartBar as BarChart3, Music, Mic, Volume2, Calendar, Menu } from "lucide-react"
+import { LayoutDashboard, FileText, Users, Settings, Trophy, ChartBar as BarChart3, Music, Mic, Volume2, Calendar, Menu, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { useAuth } from "@/hooks/use-auth"
 import { getMembers, getDocumentation, getAchievements } from "@/lib/firebase-service"
 import type { Member, Documentation, Achievement } from "@/types"
@@ -96,21 +98,30 @@ export default function HadrohAdminDashboard({ onLogout }: HadrohAdminDashboardP
           icon={Users}
           variant="success"
         />
-        <DashboardCard title="Pertunjukan" value={6} description="Show tahun ini" icon={Mic} variant="success" />
+        <DashboardCard 
+          title="Dokumentasi" 
+          value={documentation.length} 
+          description="Kegiatan terdokumentasi" 
+          icon={FileText} 
+          variant="success" 
+        />
         <DashboardCard
           title="Prestasi"
           value={achievements.length}
-          description="Penghargaan hadroh"
+          description="Total prestasi"
           icon={Trophy}
           variant="warning"
         />
         <DashboardCard
-          title="Repertoar"
-          value={15}
-          description="Lagu dikuasai"
+          title="Kegiatan Bulan Ini"
+          value={documentation.filter(doc => {
+            const docDate = new Date(doc.date)
+            const now = new Date()
+            return docDate.getMonth() === now.getMonth() && docDate.getFullYear() === now.getFullYear()
+          }).length}
+          description="Aktivitas terbaru"
           icon={Volume2}
           variant="primary"
-          trend={{ value: 3, label: "lagu baru bulan ini", isPositive: true }}
         />
       </div>
 
@@ -152,10 +163,196 @@ export default function HadrohAdminDashboard({ onLogout }: HadrohAdminDashboardP
     </div>
   )
 
+  const renderPerformances = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-heading font-bold mb-2">Pertunjukan Hadroh</h1>
+          <p className="text-muted-foreground">Kelola jadwal dan pertunjukan hadroh</p>
+        </div>
+        <Button className="hover-lift">
+          <Plus className="w-4 h-4 mr-2" />
+          Tambah Pertunjukan
+        </Button>
+      </div>
+      
+      <Card>
+        <CardContent className="p-12 text-center">
+          <Mic className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-muted-foreground mb-2">Fitur Dalam Pengembangan</h3>
+          <p className="text-muted-foreground">Manajemen pertunjukan akan segera tersedia</p>
+        </CardContent>
+      </Card>
+    </div>
+  )
+
+  const renderRehearsals = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-heading font-bold mb-2">Latihan Hadroh</h1>
+          <p className="text-muted-foreground">Kelola jadwal dan materi latihan</p>
+        </div>
+        <Button className="hover-lift">
+          <Plus className="w-4 h-4 mr-2" />
+          Tambah Latihan
+        </Button>
+      </div>
+      
+      <Card>
+        <CardContent className="p-12 text-center">
+          <Music className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-muted-foreground mb-2">Fitur Dalam Pengembangan</h3>
+          <p className="text-muted-foreground">Manajemen latihan akan segera tersedia</p>
+        </CardContent>
+      </Card>
+    </div>
+  )
+
+  const renderRepertoire = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-heading font-bold mb-2">Repertoar Hadroh</h1>
+          <p className="text-muted-foreground">Kelola daftar lagu dan sholawat</p>
+        </div>
+        <Button className="hover-lift">
+          <Plus className="w-4 h-4 mr-2" />
+          Tambah Sholawat
+        </Button>
+      </div>
+      
+      <Card>
+        <CardContent className="p-12 text-center">
+          <Volume2 className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-muted-foreground mb-2">Fitur Dalam Pengembangan</h3>
+          <p className="text-muted-foreground">Manajemen repertoar akan segera tersedia</p>
+        </CardContent>
+      </Card>
+    </div>
+  )
+
+  const renderReports = () => (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-heading font-bold mb-2">Laporan Hadroh</h1>
+        <p className="text-muted-foreground">Analisis data dan laporan ekstrakurikuler hadroh</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Laporan Anggota</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span>Total Anggota</span>
+                <span className="font-bold">{members.length}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Anggota Aktif</span>
+                <span className="font-bold text-green-600">{members.filter(m => m.status === 'active').length}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Dokumentasi</span>
+                <span className="font-bold">{documentation.length}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Laporan Prestasi</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span>Total Prestasi</span>
+                <span className="font-bold">{achievements.length}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Prestasi Nasional</span>
+                <span className="font-bold text-yellow-600">{achievements.filter(a => a.level === 'Nasional').length}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Prestasi Tahun Ini</span>
+                <span className="font-bold">{achievements.filter(a => new Date(a.date).getFullYear() === new Date().getFullYear()).length}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+
+  const renderSettings = () => (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-heading font-bold mb-2">Pengaturan Hadroh</h1>
+        <p className="text-muted-foreground">Kelola pengaturan ekstrakurikuler hadroh</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Informasi Ekstrakurikuler</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label>Nama Ekstrakurikuler</Label>
+              <Input value="Hadroh" disabled />
+            </div>
+            <div>
+              <Label>Pembina</Label>
+              <Input value={user?.name || "Admin Hadroh"} disabled />
+            </div>
+            <div>
+              <Label>Lokasi</Label>
+              <Input placeholder="Masjid Sekolah" />
+            </div>
+            <div>
+              <Label>Jadwal</Label>
+              <Input placeholder="Jumat & Minggu, 15:00-17:00" />
+            </div>
+            <Button>Simpan Pengaturan</Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Statistik</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span>Total Anggota</span>
+              <span className="font-bold">{members.length}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Total Dokumentasi</span>
+              <span className="font-bold">{documentation.length}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Total Prestasi</span>
+              <span className="font-bold">{achievements.length}</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+
   const renderContent = () => {
     switch (activeTab) {
       case "dashboard":
         return renderDashboard()
+      case "performances":
+        return renderPerformances()
+      case "rehearsals":
+        return renderRehearsals()
+      case "repertoire":
+        return renderRepertoire()
       case "members":
         return <AdminMemberCRUD ekskulType="hadroh" />
       case "documentation":
@@ -164,14 +361,10 @@ export default function HadrohAdminDashboard({ onLogout }: HadrohAdminDashboardP
         return <AdminAttendanceManagement />
       case "achievements":
         return <AdminAchievementManagement />
-      case "members":
-        return <AdminMemberCRUD ekskulType="hadroh" />
-      case "documentation":
-        return <AdminDocumentationCRUD ekskulType="hadroh" />
-      case "attendance":
-        return <AdminAttendanceManagement />
-      case "achievements":
-        return <AdminAchievementManagement />
+      case "reports":
+        return renderReports()
+      case "settings":
+        return renderSettings()
       default:
         return renderDashboard()
     }
