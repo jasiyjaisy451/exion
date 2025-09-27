@@ -1,10 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { LayoutDashboard, FileText, Users, Settings, Trophy, ChartBar as BarChart3, BookOpen, Mic, Volume2, Calendar, Menu } from "lucide-react"
+import { LayoutDashboard, FileText, Users, Settings, Trophy, ChartBar as BarChart3, BookOpen, Mic, Volume2, Calendar, Menu, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { useAuth } from "@/hooks/use-auth"
 import { getMembers, getDocumentation, getAchievements } from "@/lib/firebase-service"
 import type { Member, Documentation, Achievement } from "@/types"
@@ -96,21 +98,30 @@ export default function QoriAdminDashboard({ onLogout }: QoriAdminDashboardProps
           icon={Users}
           variant="primary"
         />
-        <DashboardCard title="Kompetisi MTQ" value={4} description="Event tahun ini" icon={Trophy} variant="primary" />
+        <DashboardCard 
+          title="Dokumentasi" 
+          value={documentation.length} 
+          description="Kegiatan terdokumentasi" 
+          icon={FileText} 
+          variant="primary" 
+        />
         <DashboardCard
           title="Prestasi"
           value={achievements.length}
-          description="Penghargaan tilawah"
+          description="Total prestasi"
           icon={Trophy}
           variant="warning"
         />
         <DashboardCard
-          title="Surah Dikuasai"
-          value={30}
-          description="Hafalan & tilawah"
+          title="Kegiatan Bulan Ini"
+          value={documentation.filter(doc => {
+            const docDate = new Date(doc.date)
+            const now = new Date()
+            return docDate.getMonth() === now.getMonth() && docDate.getFullYear() === now.getFullYear()
+          }).length}
+          description="Aktivitas terbaru"
           icon={BookOpen}
           variant="primary"
-          trend={{ value: 5, label: "surah baru bulan ini", isPositive: true }}
         />
       </div>
 
@@ -152,10 +163,196 @@ export default function QoriAdminDashboard({ onLogout }: QoriAdminDashboardProps
     </div>
   )
 
+  const renderCompetitions = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-heading font-bold mb-2">Kompetisi MTQ</h1>
+          <p className="text-muted-foreground">Kelola kompetisi dan lomba tilawah</p>
+        </div>
+        <Button className="hover-lift">
+          <Plus className="w-4 h-4 mr-2" />
+          Tambah Kompetisi
+        </Button>
+      </div>
+      
+      <Card>
+        <CardContent className="p-12 text-center">
+          <Trophy className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-muted-foreground mb-2">Fitur Dalam Pengembangan</h3>
+          <p className="text-muted-foreground">Manajemen kompetisi MTQ akan segera tersedia</p>
+        </CardContent>
+      </Card>
+    </div>
+  )
+
+  const renderTraining = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-heading font-bold mb-2">Latihan Tilawah</h1>
+          <p className="text-muted-foreground">Kelola jadwal dan materi latihan</p>
+        </div>
+        <Button className="hover-lift">
+          <Plus className="w-4 h-4 mr-2" />
+          Tambah Latihan
+        </Button>
+      </div>
+      
+      <Card>
+        <CardContent className="p-12 text-center">
+          <BookOpen className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-muted-foreground mb-2">Fitur Dalam Pengembangan</h3>
+          <p className="text-muted-foreground">Manajemen latihan tilawah akan segera tersedia</p>
+        </CardContent>
+      </Card>
+    </div>
+  )
+
+  const renderRecitations = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-heading font-bold mb-2">Bacaan Al-Quran</h1>
+          <p className="text-muted-foreground">Kelola materi dan bacaan Al-Quran</p>
+        </div>
+        <Button className="hover-lift">
+          <Plus className="w-4 h-4 mr-2" />
+          Tambah Bacaan
+        </Button>
+      </div>
+      
+      <Card>
+        <CardContent className="p-12 text-center">
+          <Volume2 className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-muted-foreground mb-2">Fitur Dalam Pengembangan</h3>
+          <p className="text-muted-foreground">Manajemen bacaan akan segera tersedia</p>
+        </CardContent>
+      </Card>
+    </div>
+  )
+
+  const renderReports = () => (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-heading font-bold mb-2">Laporan Qori</h1>
+        <p className="text-muted-foreground">Analisis data dan laporan ekstrakurikuler qori</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Laporan Anggota</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span>Total Qori</span>
+                <span className="font-bold">{members.length}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Qori Aktif</span>
+                <span className="font-bold text-green-600">{members.filter(m => m.status === 'active').length}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Dokumentasi</span>
+                <span className="font-bold">{documentation.length}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Laporan Prestasi</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span>Total Prestasi</span>
+                <span className="font-bold">{achievements.length}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Prestasi Nasional</span>
+                <span className="font-bold text-yellow-600">{achievements.filter(a => a.level === 'Nasional').length}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Prestasi Tahun Ini</span>
+                <span className="font-bold">{achievements.filter(a => new Date(a.date).getFullYear() === new Date().getFullYear()).length}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+
+  const renderSettings = () => (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-heading font-bold mb-2">Pengaturan Qori</h1>
+        <p className="text-muted-foreground">Kelola pengaturan ekstrakurikuler qori</p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Informasi Ekstrakurikuler</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label>Nama Ekstrakurikuler</Label>
+              <Input value="Qori" disabled />
+            </div>
+            <div>
+              <Label>Pembina</Label>
+              <Input value={user?.name || "Admin Qori"} disabled />
+            </div>
+            <div>
+              <Label>Lokasi</Label>
+              <Input placeholder="Masjid Sekolah" />
+            </div>
+            <div>
+              <Label>Jadwal</Label>
+              <Input placeholder="Rabu & Sabtu, 16:00-18:00" />
+            </div>
+            <Button>Simpan Pengaturan</Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Statistik</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span>Total Qori</span>
+              <span className="font-bold">{members.length}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Total Dokumentasi</span>
+              <span className="font-bold">{documentation.length}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Total Prestasi</span>
+              <span className="font-bold">{achievements.length}</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+
   const renderContent = () => {
     switch (activeTab) {
       case "dashboard":
         return renderDashboard()
+      case "competitions":
+        return renderCompetitions()
+      case "training":
+        return renderTraining()
+      case "recitations":
+        return renderRecitations()
       case "members":
         return <AdminMemberCRUD ekskulType="qori" />
       case "documentation":
@@ -164,14 +361,10 @@ export default function QoriAdminDashboard({ onLogout }: QoriAdminDashboardProps
         return <AdminAttendanceManagement />
       case "achievements":
         return <AdminAchievementManagement />
-      case "members":
-        return <AdminMemberCRUD ekskulType="qori" />
-      case "documentation":
-        return <AdminDocumentationCRUD ekskulType="qori" />
-      case "attendance":
-        return <AdminAttendanceManagement />
-      case "achievements":
-        return <AdminAchievementManagement />
+      case "reports":
+        return renderReports()
+      case "settings":
+        return renderSettings()
       default:
         return renderDashboard()
     }

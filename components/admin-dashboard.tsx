@@ -344,14 +344,22 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
 
         <Card className="admin-card hover-lift border-l-4 border-l-purple-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-foreground">Tingkat Kehadiran</CardTitle>
+            <CardTitle className="text-sm font-medium text-foreground">Kegiatan Bulan Ini</CardTitle>
             <div className="p-2 bg-purple-100 rounded-lg">
-              <Trophy className="h-4 w-4 text-purple-600" />
+              <Calendar className="h-4 w-4 text-purple-600" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold font-heading text-foreground">92%</div>
-            <p className="text-xs text-muted-foreground">Rata-rata kehadiran</p>
+            <div className="text-2xl font-bold font-heading text-foreground">
+              {
+                dokumentasi.filter((doc) => {
+                  const docDate = new Date(doc.date)
+                  const now = new Date()
+                  return docDate.getMonth() === now.getMonth() && docDate.getFullYear() === now.getFullYear()
+                }).length
+              }
+            </div>
+            <p className="text-xs text-muted-foreground">Kegiatan bulan ini</p>
           </CardContent>
         </Card>
       </div>
